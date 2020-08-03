@@ -11,12 +11,19 @@ import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.kohsuke.MetaInfServices;
 
+import lib.util.persistent.AnyPersistent;
+import lib.util.persistent.ObjectDirectory;
+import lib.util.persistent.PersistentHashMap;
+
 import org.infinispan.persistence.pcj.configuration.PCJStoreConfiguration;
 
 @Store
 @MetaInfServices
 @ConfiguredBy(PCJStoreConfiguration.class)
-public class PCJStore<K, V> implements AdvancedLoadWriteStore<K, V> {
+public class PCJStore<K extends AnyPersistent, V extends AnyPersistent> implements AdvancedLoadWriteStore<K, V> {
+
+    String DATA_KEY = "PCJStore";
+    PersistentHashMap<K, V> map = ObjectDirectory.get(DATA_KEY, PersistentHashMap.class);
 
     private InitializationContext ctx;
     private MarshalledEntryFactory marshalledEntryFactory;
@@ -24,8 +31,7 @@ public class PCJStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public boolean contains(Object o) {
-        // TODO Auto-generated method stub
-        return false;
+        return map.containsKey(o);
     }
 
     @Override
@@ -37,32 +43,30 @@ public class PCJStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public MarshalledEntry<K, V> load(Object o) {
-        // TODO Auto-generated method stub
-        return null;
+        return marshalledEntryFactory.newMarshalledEntry(o, map.get(o), null);
     }
 
     @Override
     public void start() {
-        // TODO Auto-generated method stub
-
+        // empty
     }
 
     @Override
     public void stop() {
-        // TODO Auto-generated method stub
+        // empty
 
     }
 
     @Override
     public boolean delete(Object o) {
-        // TODO Auto-generated method stub
+        if (map.remove(o) != null)
+            return true;
         return false;
     }
 
     @Override
     public void write(MarshalledEntry<? extends K, ? extends V> marshalledEntry) {
-        // TODO Auto-generated method stub
-
+        map.put(marshalledEntry.getKey(), marshalledEntry.getValue());
     }
 
     @Override
@@ -70,28 +74,24 @@ public class PCJStore<K, V> implements AdvancedLoadWriteStore<K, V> {
             KeyFilter<? super K> arg0,
             org.infinispan.persistence.spi.AdvancedCacheLoader.CacheLoaderTask<K, V> arg1,
             Executor arg2, boolean arg3, boolean arg4) {
-        // TODO Auto-generated method stub
-
+        throw new RuntimeException();
     }
 
     @Override
     public int size() {
-        // TODO Auto-generated method stub
-        return 0;
+        return map.size();
     }
 
     @Override
     public void clear() {
-        // TODO Auto-generated method stub
-
+        map.entrySet().clear();
     }
 
     @Override
     public void purge(
             Executor arg0,
             org.infinispan.persistence.spi.AdvancedCacheWriter.PurgeListener<? super K> arg1) {
-        // TODO Auto-generated method stub
-
+        throw new RuntimeException();
     }
 
 }
