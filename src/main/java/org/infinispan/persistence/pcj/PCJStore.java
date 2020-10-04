@@ -13,7 +13,7 @@ import org.kohsuke.MetaInfServices;
 
 import lib.util.persistent.AnyPersistent;
 import lib.util.persistent.ObjectDirectory;
-import lib.util.persistent.PersistentHashMap;
+import lib.util.persistent.PersistentSIHashMap;
 
 import org.infinispan.persistence.pcj.configuration.PCJStoreConfiguration;
 
@@ -22,7 +22,7 @@ import org.infinispan.persistence.pcj.configuration.PCJStoreConfiguration;
 @ConfiguredBy(PCJStoreConfiguration.class)
 public class PCJStore<K extends AnyPersistent, V extends AnyPersistent> implements AdvancedLoadWriteStore<K, V> {
 
-    private PersistentHashMap<K, V> map = null;
+    private PersistentSIHashMap<K, V> map = null;
 
     private InitializationContext ctx;
     private MarshalledEntryFactory marshalledEntryFactory;
@@ -48,9 +48,9 @@ public class PCJStore<K extends AnyPersistent, V extends AnyPersistent> implemen
     @Override
     public void start() {
         String DATA_KEY = ctx.getCache().getName();
-        map = ObjectDirectory.get(DATA_KEY, PersistentHashMap.class);
+        map = ObjectDirectory.get(DATA_KEY, PersistentSIHashMap.class);
         if (map == null) {
-            ObjectDirectory.put(DATA_KEY, map = new PersistentHashMap<>());
+            ObjectDirectory.put(DATA_KEY, map = new PersistentSIHashMap<>());
         }
     }
 
