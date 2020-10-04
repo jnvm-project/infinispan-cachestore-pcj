@@ -22,8 +22,7 @@ import org.infinispan.persistence.pcj.configuration.PCJStoreConfiguration;
 @ConfiguredBy(PCJStoreConfiguration.class)
 public class PCJStore<K extends AnyPersistent, V extends AnyPersistent> implements AdvancedLoadWriteStore<K, V> {
 
-    String DATA_KEY = "PCJStore";
-    PersistentHashMap<K, V> map = ObjectDirectory.get(DATA_KEY, PersistentHashMap.class);
+    private PersistentHashMap<K, V> map = null;
 
     private InitializationContext ctx;
     private MarshalledEntryFactory marshalledEntryFactory;
@@ -48,20 +47,21 @@ public class PCJStore<K extends AnyPersistent, V extends AnyPersistent> implemen
 
     @Override
     public void start() {
-        // empty
+        String DATA_KEY = ctx.getCache().getName();
+        map = ObjectDirectory.get(DATA_KEY, PersistentHashMap.class);
+        if (map == null) {
+            ObjectDirectory.put(DATA_KEY, map = new PersistentHashMap<>());
+        }
     }
 
     @Override
     public void stop() {
-        // empty
-
+        map = null;
     }
 
     @Override
     public boolean delete(Object o) {
-        if (map.remove(o) != null)
-            return true;
-        return false;
+        return map.remove(o) != null;
     }
 
     @Override
